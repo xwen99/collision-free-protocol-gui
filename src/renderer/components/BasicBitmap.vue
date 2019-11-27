@@ -100,7 +100,7 @@
     </el-container>
   </div>
 </template>
-
+// ! TODOs：比特位，单步控制，时间可调
 <script>
 import SlotButton from './BasicBitmap/SlotButton'
 import Slider from './BasicBitmap/Slider'
