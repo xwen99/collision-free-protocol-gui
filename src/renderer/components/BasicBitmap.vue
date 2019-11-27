@@ -99,6 +99,12 @@
 <script>
 import SlotButton from './BasicBitmap/SlotButton'
 import Slider from './BasicBitmap/Slider'
+const STAT_IDLE = 0
+const STAT_WAIT = 1
+// eslint-disable-next-line no-unused-vars
+const STAT_MARK = 2
+// eslint-disable-next-line no-unused-vars
+const STAT_DONE = 3
 export default {
   name: 'basic-bitmap',
   components: { 'slot-button': SlotButton, slider: Slider },
@@ -125,15 +131,8 @@ export default {
       this.frequency = 0.0
       this.$refs.sliders.value1 = 64
       this.$refs.sliders.value2 = 0
-      for (let i = 0; i < Math.ceil(this.slotNum / this.slotPerLine); i++) {
-        for (
-          let j = 0;
-          j <
-          Math.min(this.slotPerLine, this.slotNum - (i - 1) * this.slotPerLine);
-          j++
-        ) {
-          this.$refs.slotbtn[i * this.slotPerLine + j].changeStatus(0)
-        }
+      for (let i = 0; i < this.slotNum; i++) {
+        this.$refs.slotbtn[i].changeStatus(STAT_IDLE)
       }
     },
     getSlotNum: function (value) {
@@ -145,64 +144,59 @@ export default {
     flipCoin () {
       return Math.random() <= this.frequency ? 1 : 0
     },
-    mainLoop () {
+    sleep (ms) {
+      return new Promise(resolve => setTimeout(resolve, ms))
+    },
+    checkStat (i, t, markList) {
+      let coin = this.flipCoin()
+      if (this.$refs.slotbtn[i].status === STAT_IDLE && coin === 1) {
+        this.$refs.slotbtn[i].changeStatus(STAT_WAIT)
+      } else if (this.$refs.slotbtn[i].status === STAT_WAIT && i === t) {
+        this.$refs.slotbtn[i].changeStatus(STAT_MARK)
+        markList.push(i)
+      } else if (this.$refs.slotbtn[i].status === STAT_DONE) {
+        if (coin === 1) {
+          this.$refs.slotbtn[i].changeStatus(STAT_WAIT)
+        } else {
+          this.$refs.slotbtn[i].changeStatus(STAT_IDLE)
+        }
+      }
+    },
+    async mainLoop () {
       let t = 0
       // eslint-disable-next-line no-unused-vars
       let totalT = 0
-      let curWaitting = 0
-      let waitList = []
+      let markList = []
       let transmitTime = 0
-      while (this.start) {
+      while (this.start === 1) {
         this.isTransmitting = t < this.slotNum ? 0 : 1
         if (t === this.slotNum) {
-          transmitTime = curWaitting
+          transmitTime = markList.length
         }
-        let i, j
         if (this.isTransmitting === 0) {
-          i = t / this.slotNum
-          j = t % this.slotNum
-          this.$refs.slotbtn[i * this.slotPerLine + j].blink()
+          this.$refs.slotbtn[t].blink()
+          this.checkStat(t, t, markList)
         } else {
-          i = waitList[0][0]
-          j = waitList[0][1]
-          this.$refs.slotbtn[i * this.slotPerLine + j].blink()
-          waitList.shift()
-          this.$refs.slotbtn[i * this.slotPerLine + j].changeStatus(2)
-          curWaitting--
+          let pos = markList.shift()
+          this.$refs.slotbtn[pos].blink()
+          this.$refs.slotbtn[pos].changeStatus(STAT_DONE)
         }
-        for (let i = 0; i < Math.ceil(this.slotNum / this.slotPerLine); i++) {
-          for (
-            let j = 0;
-            j < Math.min(this.slotPerLine, this.slotNum - i * this.slotPerLine);
-            j++
-          ) {
-            var coin = this.flipCoin()
-
-            if (
-              this.$refs.slotbtn[i * this.slotPerLine + j].status === 0 &&
-              coin === 1
-            ) {
-              this.$refs.slotbtn[i * this.slotPerLine + j].changeStatus(1)
-              waitList.push([i, j])
-              curWaitting++
-            } else if (
-              this.$refs.slotbtn[i * this.slotPerLine + j].status === 2
-            ) {
-              if (coin === 1) {
-                this.$refs.slotbtn[i * this.slotPerLine + j].changeStatus(1)
-                waitList.push([i, j])
-                curWaitting++
-              } else {
-                this.$refs.slotbtn[i * this.slotPerLine + j].changeStatus(0)
-              }
-            }
+        for (let i = 0; i < this.slotNum; i++) {
+          if (i === t) {
+            continue
           }
+          this.checkStat(i, t, markList)
+        }
+        if (t + 1 === this.slotNum + transmitTime) {
+          totalT += t + 1
+          t = 0
+          continue
+        }
+        if (this.start === 0) {
+          break
         }
         t++
-        if (t === this.slotNum + transmitTime) {
-          totalT += t
-          t = 0
-        }
+        await this.sleep(1000)
       }
     }
   }

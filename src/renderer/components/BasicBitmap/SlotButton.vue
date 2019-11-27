@@ -5,7 +5,6 @@
       :plain="this.isplain"
       :circle="this.iscircle"
       :type="this.type"
-      :autofocus="this.isfocus"
       @click="handleClick"
       >{{ text }}</el-button
     >
@@ -15,10 +14,12 @@
 <script>
 const STAT_IDLE = 0
 const STAT_WAIT = 1
+const STAT_MARK = 2
 // eslint-disable-next-line no-unused-vars
-const STAT_DONE = 2
+const STAT_DONE = 3
 const TEXT_IDLE = '🤦'
 const TEXT_WAIT = '🙋'
+const TEXT_MARK = '🙋'
 const TEXT_DONE = '‍🙆‍'
 export default {
   name: 'slot-button',
@@ -28,8 +29,7 @@ export default {
       text: TEXT_IDLE,
       isplain: true,
       iscircle: true,
-      type: 'plain',
-      isfocus: false
+      type: 'plain'
     }
   },
   methods: {
@@ -45,21 +45,24 @@ export default {
           ? TEXT_IDLE
           : status === STAT_WAIT
             ? TEXT_WAIT
-            : TEXT_DONE
+            : status === STAT_MARK
+              ? TEXT_MARK
+              : TEXT_DONE
       this.type =
         status === STAT_IDLE
           ? 'plain'
           : status === STAT_WAIT
-            ? 'primary'
-            : 'success'
+            ? 'warning'
+            : status === STAT_MARK
+              ? 'primary'
+              : 'success'
+    },
+    fliphilt () {
+      this.iscircle = !this.iscircle
     },
     blink () {
-      this.isfocus = true
-      clearTimeout(this.timer)
-      this.timer = setTimeout(() => {
-        console.log('ok')
-      }, 1000)
-      this.isfocus = false
+      this.fliphilt()
+      setTimeout(this.fliphilt, 1000)
     }
   }
 }
