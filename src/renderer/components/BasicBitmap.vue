@@ -1,23 +1,28 @@
 <template>
   <div id="basic-bitmap">
-    <el-container style="border: 1px solid #eee">
-      <el-header>
-        <el-row type="flex" justify="center" align="middle" gutter="24">
-          <el-col :span="6">
+    <el-container>
+      <el-header class="header">
+        <el-row gutter="10">
+          <el-col :span="8" type="flex" justify="center" align="middle">
             <el-image
-              style="width: 200px; height: auto"
+              style="width: 300px; height: auto; margin:10px;"
               :src="logo"
               fit="contain"
             ></el-image>
           </el-col>
-          <el-col :span="10">
-            <el-menu default-active="1" class="el-menu" mode="horizontal">
-              <el-menu-item index="1">Basic Bitmap</el-menu-item>
-              <el-menu-item index="2">Token Passing</el-menu-item>
-              <el-menu-item index="3">Binary Countdown</el-menu-item>
+          <el-col :span="10" justify="space-around" align="middle">
+            <el-menu
+              default-active="1"
+              class="el-menu"
+              mode="horizontal"
+              @select="this.handleChangePage"
+            >
+              <el-menu-item index="1">{{ this.METHODS[0] }}</el-menu-item>
+              <el-menu-item index="2">{{ this.METHODS[1] }}</el-menu-item>
+              <el-menu-item index="3">{{ this.METHODS[2] }}</el-menu-item>
             </el-menu>
           </el-col>
-          <el-col :span="6">
+          <el-col :span="6" justify="center" align="middle">
             <el-button
               plain
               type="plain"
@@ -44,7 +49,7 @@
 
       <el-main>
         <el-row type="flex" justify="center" align="middle">
-          <div class="title">This is the Basic Bitmap Method.</div>
+          <div class="title">{{ this.getTitle(this.page) }}</div>
         </el-row>
         <div class="basic-bitmap-demo">
           <el-card class="box-card" shadow="hover">
@@ -82,7 +87,7 @@
                   <div class="text item">
                     <el-progress
                       type="circle"
-                      :percentage="30"
+                      :percentage="this.transmitPercentage"
                       width="200"
                     ></el-progress>
                   </div>
@@ -112,28 +117,49 @@ export default {
     return {
       slotNum: 64,
       slotPerLine: 8,
-      frequency: 0.0,
+      frequency: 0.5,
       start: 0,
       isTransmitting: 0,
+      transmitTime: 0,
+      totalTime: 0,
+      transmitPercentage: 0,
+      METHODS: ['Basic Bitmap', 'Token Passing', 'Binary Countdown'],
+      page: 0,
       logo: require('../assets/logo.png')
     }
   },
   methods: {
+    reset () {
+      this.start = 0
+      this.isTransmitting = 0
+      this.transmitTime = 0
+      this.totalTime = 0
+      this.transmitPercentage = 0
+      this.slotNum = 64
+      this.slotPerLine = 8
+      this.frequency = 0.5
+      this.page = 0
+      this.$refs.sliders.value1 = 64
+      this.$refs.sliders.value2 = 50
+      this.$refs.sliders.percentage = 0
+      for (let i = 0; i < this.slotNum; i++) {
+        this.$refs.slotbtn[i].reset()
+      }
+    },
+    getTitle (page) {
+      return 'This is The ' + this.METHODS[page] + ' Method.'
+    },
+    handleChangePage (key, keypath) {
+      this.page = key === '1' ? 0 : key === '2' ? 1 : 2
+    },
     handleStart (tab, event) {
       this.start = 1
       this.mainLoop()
     },
-    handleFresh (tab, event) {
-      this.start = 0
-      this.isTransmitting = 0
-      this.slotNum = 64
-      this.slotPerLine = 8
-      this.frequency = 0.0
-      this.$refs.sliders.value1 = 64
-      this.$refs.sliders.value2 = 0
-      for (let i = 0; i < this.slotNum; i++) {
-        this.$refs.slotbtn[i].changeStatus(STAT_IDLE)
-      }
+    async handleFresh (tab, event) {
+      this.reset()
+      await this.sleep(1000)
+      this.reset()
     },
     getSlotNum: function (value) {
       this.slotNum = value
@@ -142,16 +168,19 @@ export default {
       this.frequency = value
     },
     flipCoin () {
-      return Math.random() <= this.frequency ? 1 : 0
+      return Math.random() <=
+        1 - Math.pow(1 - this.frequency, 1.0 / this.slotNum)
+        ? 1
+        : 0
     },
     sleep (ms) {
       return new Promise(resolve => setTimeout(resolve, ms))
     },
-    checkStat (i, t, markList) {
+    checkStat (i, pos, markList) {
       let coin = this.flipCoin()
       if (this.$refs.slotbtn[i].status === STAT_IDLE && coin === 1) {
         this.$refs.slotbtn[i].changeStatus(STAT_WAIT)
-      } else if (this.$refs.slotbtn[i].status === STAT_WAIT && i === t) {
+      } else if (this.$refs.slotbtn[i].status === STAT_WAIT && i === pos) {
         this.$refs.slotbtn[i].changeStatus(STAT_MARK)
         markList.push(i)
       } else if (this.$refs.slotbtn[i].status === STAT_DONE) {
@@ -164,38 +193,47 @@ export default {
     },
     async mainLoop () {
       let t = 0
+      let pos
       // eslint-disable-next-line no-unused-vars
-      let totalT = 0
       let markList = []
-      let transmitTime = 0
+      let curTransTime = 0
       while (this.start === 1) {
         this.isTransmitting = t < this.slotNum ? 0 : 1
-        if (t === this.slotNum) {
-          transmitTime = markList.length
-        }
         if (this.isTransmitting === 0) {
-          this.$refs.slotbtn[t].blink()
-          this.checkStat(t, t, markList)
+          pos = t
+          this.$refs.slotbtn[pos].blink()
+          this.checkStat(pos, pos, markList)
         } else {
-          let pos = markList.shift()
+          pos = markList.shift()
           this.$refs.slotbtn[pos].blink()
           this.$refs.slotbtn[pos].changeStatus(STAT_DONE)
         }
         for (let i = 0; i < this.slotNum; i++) {
-          if (i === t) {
+          if (i === pos) {
             continue
           }
           this.checkStat(i, t, markList)
         }
-        if (t + 1 === this.slotNum + transmitTime) {
-          totalT += t + 1
-          t = 0
-          continue
-        }
-        if (this.start === 0) {
-          break
-        }
         t++
+        this.totalTime++
+        if (this.isTransmitting === 1) {
+          this.transmitTime++
+          this.transmitPercentage = (
+            ((t - this.slotNum) * 100) /
+            curTransTime
+          ).toFixed(2)
+        } else {
+          this.transmitPercentage = 0
+        }
+        this.$refs.sliders.percentage = (
+          (this.transmitTime * 100) /
+          this.totalTime
+        ).toFixed(2)
+        if (t === this.slotNum) {
+          curTransTime = markList.length
+        } else if (t === this.slotNum + curTransTime) {
+          t = 0
+        }
         await this.sleep(1000)
       }
     }
@@ -203,13 +241,30 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.header {
+  height: 80px;
+  background-color: #fff;
+  color: #fff;
+  top: 0;
+  left: 0;
+  width: 100%;
+  line-height: 80px;
+  z-index: 100;
+  position: relative;
+}
+.container {
+  height: 100%;
+  box-sizing: border-box;
+  border-bottom: 1px solid #dcdfe6;
+}
 .title {
   display: flex;
   flex-direction: column;
   color: #2c3e50;
   font-size: 20px;
   font-weight: bold;
+  margin-top: 10px;
   margin-bottom: 20px;
 }
 

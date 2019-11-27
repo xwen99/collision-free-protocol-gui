@@ -51,8 +51,8 @@ export default {
   data () {
     return {
       value1: 64,
-      value2: 0,
-      percentage: 80,
+      value2: 50,
+      percentage: 0,
       customColor: '#409eff',
       customColors: [
         { color: '#f56c6c', percentage: 20 },
@@ -65,7 +65,7 @@ export default {
   },
   methods: {
     percentFormat (val) {
-      return val + '%'
+      return val.toFixed(2) + '%'
     },
     customColorMethod (percentage) {
       if (percentage < 30) {

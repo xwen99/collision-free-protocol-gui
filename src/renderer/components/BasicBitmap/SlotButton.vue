@@ -33,6 +33,13 @@ export default {
     }
   },
   methods: {
+    reset () {
+      this.status = STAT_IDLE
+      this.text = TEXT_IDLE
+      this.isplain = true
+      this.iscircle = true
+      this.type = 'plain'
+    },
     // actually, make sure it is not clickable
     handleClick (tab, event) {
       console.log(tab, event)
