@@ -1,44 +1,47 @@
 <template>
   <div class="block">
-    <el-row type="flex" align="middle">
-      <el-col span="6" type="flex" align="start">
+    <el-row type="flex"
+            align="middle">
+      <el-col span="6"
+              type="flex"
+              align="start">
         <span class="demonstration">Efficiency</span>
       </el-col>
       <el-col span="24">
-        <el-progress
-          :text-inside="true"
-          :stroke-width="20"
-          :percentage="percentage"
-          :color="customColorMethod"
-          style="float: right; width: 90%;"
-        ></el-progress>
+        <el-progress :text-inside="true"
+                     :stroke-width="20"
+                     :percentage="percentage"
+                     :color="customColorMethod"
+                     style="float: right; width: 90%;"></el-progress>
       </el-col>
     </el-row>
-    <el-row type="flex" align="middle">
-      <el-col span="6" type="flex" align="start">
+    <el-row type="flex"
+            align="middle">
+      <el-col span="6"
+              type="flex"
+              align="start">
         <span class="demonstration">Slot Number</span>
       </el-col>
       <el-col span="24">
-        <el-slider
-          v-model="value1"
-          max="64"
-          @input="value1Change"
-          style="float: right; width: 90%;"
-        >
+        <el-slider v-model="value1"
+                   max="64"
+                   @input="value1Change"
+                   style="float: right; width: 90%;">
         </el-slider>
       </el-col>
     </el-row>
-    <el-row type="flex" align="middle">
-      <el-col span="6" type="flex" align="start">
+    <el-row type="flex"
+            align="middle">
+      <el-col span="6"
+              type="flex"
+              align="start">
         <span class="demonstration">Frequency</span>
       </el-col>
       <el-col span="24">
-        <el-slider
-          v-model="value2"
-          :format-tooltip="percentFormat"
-          @input="value2Change"
-          style="float: right; width: 90%;"
-        >
+        <el-slider v-model="value2"
+                   :format-tooltip="percentFormat"
+                   @input="value2Change"
+                   style="float: right; width: 90%;">
         </el-slider>
       </el-col>
     </el-row>

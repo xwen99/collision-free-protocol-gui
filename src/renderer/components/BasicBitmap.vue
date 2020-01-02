@@ -3,73 +3,79 @@
     <el-container>
       <el-header class="header">
         <el-row gutter="10">
-          <el-col :span="8" type="flex" justify="center" align="middle">
-            <el-image
-              style="width: 300px; height: auto; margin:10px;"
-              :src="logo"
-              fit="contain"
-            ></el-image>
+          <el-col :span="8"
+                  type="flex"
+                  justify="center"
+                  align="middle">
+            <el-image style="width: 300px; height: auto; margin:10px;"
+                      :src="logo"
+                      fit="contain"></el-image>
           </el-col>
-          <el-col :span="10" justify="space-around" align="middle">
-            <el-menu
-              default-active="1"
-              class="el-menu"
-              mode="horizontal"
-              @select="this.handleChangePage"
-            >
+          <el-col :span="10"
+                  justify="space-around"
+                  align="middle">
+            <el-menu default-active="1"
+                     class="el-menu"
+                     mode="horizontal"
+                     @select="this.handleChangePage">
               <el-menu-item index="1">{{ this.METHODS[0] }}</el-menu-item>
               <el-menu-item index="2">{{ this.METHODS[1] }}</el-menu-item>
               <el-menu-item index="3">{{ this.METHODS[2] }}</el-menu-item>
             </el-menu>
           </el-col>
-          <el-col :span="6" justify="center" align="middle">
-            <el-button
-              plain
-              type="plain"
-              icon="el-icon-video-play"
-              circle
-              @click="handleStart"
-            ></el-button>
-            <el-button
-              plain
-              type="plain"
-              icon="el-icon-refresh"
-              circle
-              @click="handleFresh"
-            ></el-button>
-            <el-button
-              plain
-              type="plain"
-              icon="el-icon-more"
-              circle
-            ></el-button>
+          <el-col :span="6"
+                  justify="center"
+                  align="middle">
+            <el-button plain
+                       type="plain"
+                       icon="el-icon-video-play"
+                       circle
+                       @click="handleStart"></el-button>
+            <el-button plain
+                       type="plain"
+                       icon="el-icon-refresh"
+                       circle
+                       @click="handleFresh"></el-button>
+            <el-button plain
+                       type="plain"
+                       icon="el-icon-more"
+                       circle></el-button>
           </el-col>
         </el-row>
       </el-header>
 
       <el-main>
-        <el-row type="flex" justify="center" align="middle">
+        <el-row type="flex"
+                justify="center"
+                align="middle">
           <div class="title">{{ this.getTitle(this.page) }}</div>
         </el-row>
-        <div class="basic-bitmap-demo">
-          <el-card class="box-card" shadow="hover">
-            <el-row type="flex" justify="center" align="middle">
+        <div v-if="this.page==0"
+             class="basic-bitmap-demo">
+          <el-card class="box-card"
+                   shadow="hover">
+            <el-row type="flex"
+                    justify="center"
+                    align="middle">
               <el-col class="el-col el-col-12">
                 <div class="block">
-                  <el-row type="flex" justify="center" align="middle">
+                  <el-row type="flex"
+                          justify="center"
+                          align="middle">
                     <div class="sub-title">
                       1: Broadcast the Desire to Transmit
                     </div>
                   </el-row>
-                  <span v-for="i in Math.ceil(slotNum / slotPerLine)" :key="i">
-                    <el-row type="flex" justify="center" align="middle">
-                      <span
-                        v-for="j in Math.min(
+                  <span v-for="i in Math.ceil(slotNum / slotPerLine)"
+                        :key="i">
+                    <el-row type="flex"
+                            justify="center"
+                            align="middle">
+                      <span v-for="j in Math.min(
                           slotPerLine,
                           slotNum - (i - 1) * slotPerLine
                         )"
-                        :key="j"
-                      >
+                            :key="j">
                         <slot-button ref="slotbtn"></slot-button>
                       </span>
                     </el-row>
@@ -77,23 +83,25 @@
                 </div>
               </el-col>
               <el-col class="el-col el-col-12">
-                <slider
-                  ref="sliders"
-                  @getSlotNum="getSlotNum"
-                  @getFrequency="getFrequency"
-                ></slider>
+                <slider ref="sliders"
+                        @getSlotNum="getSlotNum"
+                        @getFrequency="getFrequency"></slider>
                 <div class="block">
                   <div class="sub-title">2: Transmit the Data</div>
                   <div class="text item">
-                    <el-progress
-                      type="circle"
-                      :percentage="this.transmitPercentage"
-                      width="200"
-                    ></el-progress>
+                    <el-progress type="circle"
+                                 :percentage="this.transmitPercentage"
+                                 width="200"></el-progress>
                   </div>
                 </div>
               </el-col>
             </el-row>
+          </el-card>
+        </div>
+        <div v-else>
+          <el-card class="box-card"
+                   shadow="hover">
+            Still under development...
           </el-card>
         </div>
       </el-main>

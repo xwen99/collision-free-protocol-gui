@@ -1,4 +1,4 @@
-# my-project
+# Collision Free Protocol GUI
 
 > An electron-vue project
 
